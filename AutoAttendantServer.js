@@ -8,7 +8,7 @@ function GetAutoAttendant(extension, company, tenant, CallBack){
     logger.debug("DVP-AutoAttendant.GetAutoAttendant Internal method ");
 
 
-    dbmodel.AutoAttendant.find({where: [{Extention: extension, Company: company, Tenant : tenant}]}).complete(function (err, aaData) {
+    dbmodel.AutoAttendant.find({include: [{model: dbmodel.Action, as: "Actions"}], where: [{Extention: extension, Company: company, Tenant : tenant}]}).complete(function (err, aaData) {
 
 
         if (!err && aaData) {
