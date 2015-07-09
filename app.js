@@ -24,6 +24,7 @@ server.use(restify.bodyParser({ mapParams: false }));
 server.post('/DVP/API/:version/AuttoAttendant', aa.CreateAutoAttendant);
 server.get('/DVP/API/:version/AuttoAttendants', aa.GetAttendants);
 server.get('/DVP/API/:version/AuttoAttendant/:name', aa.GetAttendantByName);
+server.del('/DVP/API/:version/AuttoAttendant/:name', aa.RemoveAutoAttendent);
 server.post('/DVP/API/:version/AuttoAttendant/:name/DayGreeting/:file', aa.SetDayGreetingFile);
 server.post('/DVP/API/:version/AuttoAttendant/:name/NightGreeting/:file', aa.SetNightGreetingFile);
 server.post('/DVP/API/:version/AuttoAttendant/:name/Menue/:file', aa.SetMenue);
@@ -31,6 +32,7 @@ server.post('/DVP/API/:version/AuttoAttendant/:name/Loop/:count', aa.SetLoopCoun
 server.post('/DVP/API/:version/AuttoAttendant/:name/Timeout/:sec', aa.SetTimeout);
 server.post('/DVP/API/:version/AuttoAttendant/:name/EnableExtention/:status', aa.SetExtensionDialing);
 server.post('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.SetAction);
+//server.del('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.RemoveAction);
 
 
 //var basepath = 'http://'+ host;

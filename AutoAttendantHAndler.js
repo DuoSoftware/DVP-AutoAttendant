@@ -96,10 +96,14 @@ function GetAttendants(req, res, next) {
 
                 logger.debug("DVP-AutoAttendant.GetAttendants PGSQL  found");
                 res.write(instance);
+                res.end();
+
             } catch(exp) {
 
                 logger.error("DVP-AutoAttendant.GetAttendants stringify json failed",  exp);
-                res.write("");
+                var instance = msg.FormatMessage(exp,"Auto Attendant Error", false,undefined);
+                res.write(instance);
+                res.end();
 
             }
         } else {
@@ -107,9 +111,10 @@ function GetAttendants(req, res, next) {
 
             logger.error("DVP-AutoAttendant.GetAttendants PGSQL failed",  err);
             res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            res.end();
         }
 
-        res.end();
+
 
     })
 
@@ -137,10 +142,13 @@ function GetAttendantByName(req, res, next) {
 
                 logger.debug("DVP-AutoAttendant.GetAttendantByName PGSQL  found");
                 res.write(instance);
+                res.end();
             } catch(exp) {
 
                 logger.error("DVP-AutoAttendant.GetAttendantByName stringify json failed",  exp);
+                var instance = msg.FormatMessage(exp,"Auto Attendant Error", false,undefined);
                 res.write("");
+                res.end();
 
             }
         } else {
@@ -148,9 +156,10 @@ function GetAttendantByName(req, res, next) {
 
             logger.error("DVP-AutoAttendant.GetAttendantByName PGSQL failed",  err);
             res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            res.end();
         }
 
-        res.end();
+
 
     })
     return next();
@@ -519,6 +528,136 @@ function SetExtensionDialing(req, res, next) {
 }
 
 
+function RemoveAction(req, res, next) {
+
+
+
+    logger.debug("DVP-AutoAttendant.RemoveAction HTTP byID ");
+
+
+    dbmodel.AutoAttendant.find({where: [{Name: req.params.name }], include: [{model: dbmodel.Action, as: "Actions"}]}).complete(function (err, aaData) {
+
+
+        if (!err) {
+
+            try {
+
+                logger.debug("DVP-AutoAttendant.RemoveAction PGSQL  found");
+
+
+                aaData.destroy().complete(function (errx, result)
+                {
+                    if(!errx)
+                    {
+                        logger.info("DVP-AutoAttendant.RemoveAction PGSQL  Removed");
+                        var instance = msg.FormatMessage(undefined,"Action Deleted", true,undefined);
+
+                    }
+                    else
+                    {
+                        logger.error("DVP-AutoAttendant.RemoveAction PGSQL  failed", errx);
+                        var instance = msg.FormatMessage(errx,"Action delete failed", false,undefined);
+
+
+                    }
+                });
+
+
+
+
+                res.write(instance);
+                res.end();
+            } catch(exp) {
+
+                logger.error("DVP-AutoAttendant.RemoveAction stringify json failed",  exp);
+                var instance = msg.FormatMessage(exp,"Action delete failed", false,undefined);
+                res.write(instance);
+                res.end();
+
+            }
+        } else {
+
+
+            logger.error("DVP-AutoAttendant.RemoveAction PGSQL failed",  err);
+            res.write(msg.FormatMessage(err,"Action NotFound", false,undefined));
+            res.end();
+        }
+
+
+
+    })
+    return next();
+}
+
+
+function RemoveAutoAttendent(req, res, next) {
+
+
+
+
+    logger.debug("DVP-AutoAttendant.RemoveAutoAttendent HTTP byID ");
+
+
+    dbmodel.AutoAttendant.find({where: [{Name: req.params.name }], include: [{model: dbmodel.Action, as: "Actions"}]}).complete(function (err, aaData) {
+
+
+        if (!err) {
+
+            try {
+
+                logger.debug("DVP-AutoAttendant.RemoveAutoAttendent PGSQL  found");
+
+
+                var instance;
+                aaData.destroy().complete(function (errx, result)
+                {
+                    if(!errx)
+                    {
+                        logger.info("DVP-AutoAttendant.RemoveAutoAttendent PGSQL  Removed");
+                        instance = msg.FormatMessage(undefined,"Auto Attendant Deleted", true,undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    else
+                    {
+                        logger.error("DVP-AutoAttendant.RemoveAutoAttendent PGSQL  failed", errx);
+                        instance = msg.FormatMessage(errx,"Auto Attendant delete failed", true,undefined);
+                        res.write(instance);
+                        res.end();
+
+
+                    }
+                });
+
+
+
+
+
+            } catch(exp) {
+
+                logger.error("DVP-AutoAttendant.RemoveAutoAttendent stringify json failed",  exp);
+                instance = msg.FormatMessage(exp,"Auto Attendant delete failed", false,undefined);
+                res.write(instance);
+                res.end();
+
+            }
+        } else {
+
+
+            logger.error("DVP-AutoAttendant.RemoveAutoAttendent PGSQL failed",  err);
+            res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            res.end();
+        }
+
+
+
+    })
+    return next();
+
+}
+
+
 function SetAction(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetAction HTTP");
@@ -571,6 +710,7 @@ function SetAction(req, res, next) {
 
                             var instance = msg.FormatMessage(err, "Add Action", status, undefined);
                             res.write(instance);
+                            res.end();
 
                             logger.error("DVP-AutoAttendant.SetAction Action Save Failed ",err);
 
@@ -601,7 +741,7 @@ function SetAction(req, res, next) {
     }
 
 
-    next();
+    return next();
 
 
 }
@@ -617,6 +757,8 @@ module.exports.SetLoopCount = SetLoopCount;
 module.exports.SetTimeout = SetTimeout;
 module.exports.SetExtensionDialing = SetExtensionDialing;
 module.exports.SetAction = SetAction;
+module.exports.RemoveAction = RemoveAction;
+module.exports.RemoveAutoAttendent = RemoveAutoAttendent;
 
 //////////////////////////////Cloud API/////////////////////////////////////////////////////
 /*

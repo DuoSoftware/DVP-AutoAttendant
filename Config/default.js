@@ -20,14 +20,14 @@ module.exports = {
     {
         "vdomain": "localhost",
         "domain": "localhost",
-        "port": "4444",
+        "port": "4445",
         "version": "1.0"
     },
 
     "LBServer" : {
 
         "ip": "localhost",
-        "port": "4444"
+        "port": "4445"
 
     }
 };
