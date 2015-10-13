@@ -1,6 +1,6 @@
-var dbmodel = require('DVP-DBModels');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
-var msg = require('DVP-Common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
+var dbmodel = require('dvp-dbmodels');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
+var msg = require('dvp-common/CommonMessageGenerator/ClientMessageJsonFormatter.js');
 
 
 
