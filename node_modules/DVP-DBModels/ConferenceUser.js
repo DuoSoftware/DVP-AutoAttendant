@@ -11,7 +11,8 @@ module.exports = function(sequelize, DataTypes) {
             CurrentMute:DataTypes.BOOLEAN,
             CurrentMod:DataTypes.BOOLEAN,
             Destination:DataTypes.STRING,//Phonenumber
-            JoinType:DataTypes.STRING//In/Out
+            JoinType:DataTypes.STRING,//In/Out
+            UserStatus: DataTypes.STRING //
 
         }
     );
