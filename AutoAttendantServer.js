@@ -1,5 +1,5 @@
-var dbmodel = require('DVP-DBModels');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var dbmodel = require('dvp-models');
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
 function GetAutoAttendant(extension, company, tenant, CallBack){
