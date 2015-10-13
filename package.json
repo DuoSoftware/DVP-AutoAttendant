@@ -4,8 +4,8 @@
   "description": "Auto Attendant library for Extended dialplan service",
   "main": "app.js",
   "dependencies": {
-    "DVP-Common": "DuoSoftware/DVP-Common",
-    "DVP-DBModels": "DuoSoftware/DVP-DBModels",
+    "dvp-common": "^0.0.2",
+    "dvp-dbmodels": "^0.0.19",
     "format": "^0.2.1",
     "restify": "^3.0.3"
   },
