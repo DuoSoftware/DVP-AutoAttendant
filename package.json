@@ -1,12 +1,12 @@
 {
   "name": "DVP-AutoAttendant",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Auto Attendant library for Extended dialplan service",
   "main": "app.js",
   "dependencies": {
-    "dvp-common": "^0.0.2",
-    "dvp-dbmodels": "^0.0.19",
+    "swagger-restify-express": "^0.2.1",
     "format": "^0.2.1",
+    "dvp-common": "^0.0.2",
     "restify": "^3.0.3"
   },
   "devDependencies": {},
