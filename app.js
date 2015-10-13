@@ -1,7 +1,7 @@
 
 var restify = require('restify');
 var sre = require('swagger-restify-express');
-var logger = require('DVP-Common/LogHandler/CommonLogHandler.js').logger;
+var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var aa = require("./AutoAttendantHandler.js");
 var as = require("./AutoAttendantServer.js");
 var config = require('config');
