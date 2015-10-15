@@ -1,4 +1,4 @@
-var dbmodel = require('dvp-models');
+var dbmodel = require('dvp-dbmodels');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 
 
