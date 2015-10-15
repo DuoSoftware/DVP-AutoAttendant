@@ -20,7 +20,7 @@ module.exports = {
     {
         "vdomain": "VIRTUAL_HOST",
         "domain": "HOST_NAME",
-        "port": "HOST_AUTOATTENDAT_PORT",
+        "port": "HOST_AUTOATTENDANT_PORT",
         "version": "HOST_VERSION"
     },
 
