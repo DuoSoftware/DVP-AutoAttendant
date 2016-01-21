@@ -127,6 +127,82 @@ function GetAttendants(req, res, next) {
 
 }
 
+function UpateAttendant(req, res, next) {
+
+
+
+
+    var name = req.params.name;
+    var obj = req.body;
+
+    var outerror = undefined;
+
+    logger.debug("DVP-AutoAttendant.UpateAttendant HTTP %s ", name);
+
+    var status = false;
+    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function( aaData) {
+        if(aaData && obj) {
+
+            logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL Auto Attendant Found");
+
+            aaData.updateAttributes(obj).complete(function (dat) {
+
+
+
+                status = true;
+                logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL updated");
+
+
+
+                try {
+
+                    var instance = msg.FormatMessage(outerror, "Auto Attendant updated", status, undefined);
+                    res.write(instance);
+                    res.end();
+
+                }
+                catch (exp) {
+
+                    logger.debug("DVP-AutoAttendant.UpateAttendant Auto Attendant update Error ", exp);
+
+                }
+
+            }).catch(function (err){
+
+
+                logger.error("DVP-AutoAttendant.UpateAttendant PGSQL update Failed ", err);
+                outerror = err;
+
+                var instance = msg.FormatMessage(outerror, "Auto Attendant update", status, undefined);
+                res.write(instance);
+                res.end();
+
+            });
+        }
+        else
+        {
+            //logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(undefined, "Auto Attendant update", status, undefined);
+            res.write(instance);
+            res.end();
+
+        }
+    }).catch(function (err){
+
+
+        logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL AutoAttendant NotFound ", err);
+        var instance = msg.FormatMessage(err, "Auto Attendant update", status, undefined);
+        res.write(instance);
+        res.end();
+
+    });
+
+    return next();
+
+
+}
+
+
 
 function GetAttendantByName(req, res, next) {
 
@@ -852,6 +928,7 @@ module.exports.SetExtensionDialing = SetExtensionDialing;
 module.exports.SetAction = SetAction;
 module.exports.RemoveAction = RemoveAction;
 module.exports.RemoveAutoAttendent = RemoveAutoAttendent;
+module.exports.UpateAttendant = UpateAttendant;
 
 //////////////////////////////Cloud API/////////////////////////////////////////////////////
 /*

@@ -24,6 +24,7 @@ server.use(restify.bodyParser({ mapParams: false }));
 server.post('/DVP/API/:version/AuttoAttendant', aa.CreateAutoAttendant);
 server.get('/DVP/API/:version/AuttoAttendants', aa.GetAttendants);
 server.get('/DVP/API/:version/AuttoAttendant/:name', aa.GetAttendantByName);
+server.put('/DVP/API/:version/AuttoAttendant/:name', aa.UpateAttendant);
 server.del('/DVP/API/:version/AuttoAttendant/:name', aa.RemoveAutoAttendent);
 server.post('/DVP/API/:version/AuttoAttendant/:name/DayGreeting/:file', aa.SetDayGreetingFile);
 server.post('/DVP/API/:version/AuttoAttendant/:name/NightGreeting/:file', aa.SetNightGreetingFile);
