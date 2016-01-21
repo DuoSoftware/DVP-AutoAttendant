@@ -18,15 +18,15 @@ module.exports = {
 
     "Host":
     {
-        "vdomain": "VIRTUAL_HOST",
+        "vdomain": "LB_FRONTEND",
         "domain": "HOST_NAME",
-        "port": "HOST_AUTOATTENDAT_PORT",
+        "port": "HOST_AUTOATTENDANT_PORT",
         "version": "HOST_VERSION"
     },
 
     "LBServer" : {
 
-        "ip": "LB_IP",
+        "ip": "LB_FRONTEND",
         "port": "LB_PORT"
 
     }
