@@ -1,0 +1,30 @@
+{
+  "name": "DVP-AutoAttendant",
+  "version": "0.0.0",
+  "description": "Auto Attendant library for Extended dialplan service",
+  "main": "AutoAttendantHandler.js",
+  "dependencies": {
+    "dvp-common": "^0.0.2",
+    "format": "^0.2.1",
+    "dvp-dbmodels": "^0.0.19",
+    "config": "^1.14.0",
+    "modesl": "^1.1.3",
+    "stringify": "^3.1.0",
+    "swagger-restify-express": "^0.2.1",
+    "restify": "^3.0.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DuoSoftware/DVP-AutoAttendant.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DuoSoftware/DVP-AutoAttendant/issues"
+  },
+  "homepage": "https://github.com/DuoSoftware/DVP-AutoAttendant"
+}
