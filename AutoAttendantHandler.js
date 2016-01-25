@@ -25,8 +25,8 @@ function CreateAutoAttendant(req, res, next) {
             Extention: aaData.Extention,
             DayGreeting: aaData.DayGreeting,
             NightGreeting: aaData.NightGreeting,
-            MenuSound: aaData.Menu,
-            Tries: aaData.LoopCount,
+            MenuSound: aaData.MenuSound,
+            Tries: aaData.Tries,
             TimeOut: aaData.TimeOut,
             EnableExtention: aaData.EnableExtention,
             Company: aaData.Company,
@@ -145,7 +145,7 @@ function UpateAttendant(req, res, next) {
 
             logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL Auto Attendant Found");
 
-            aaData.updateAttributes(obj).complete(function (dat) {
+            aaData.updateAttributes(obj).then(function (dat) {
 
 
 
@@ -202,8 +202,6 @@ function UpateAttendant(req, res, next) {
 
 }
 
-
-
 function GetAttendantByName(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.GetAttendantByName HTTP byID ");
@@ -252,7 +250,6 @@ function GetAttendantByName(req, res, next) {
 
 
 }
-
 
 function SetDayGreetingFile(req, res, next) {
 
@@ -320,7 +317,6 @@ function SetDayGreetingFile(req, res, next) {
 
 }
 
-
 function SetNightGreetingFile(req, res, next) {
 
 
@@ -341,7 +337,7 @@ function SetNightGreetingFile(req, res, next) {
 
                 NightGreeting: req.params.file
 
-            }).complete(function (dat) {
+            }).then(function (dat) {
 
                     status = true;
                     logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL Set Greeting Succeed");
@@ -396,7 +392,6 @@ function SetNightGreetingFile(req, res, next) {
 
 }
 
-
 function SetMenue(req, res, next) {
 
 
@@ -418,7 +413,7 @@ function SetMenue(req, res, next) {
 
                 MenuSound: req.params.file
 
-            }).complete(function (dat) {
+            }).then(function (dat) {
 
 
 
@@ -475,7 +470,6 @@ function SetMenue(req, res, next) {
 
 }
 
-
 function SetLoopCount(req, res, next) {
 
 
@@ -495,7 +489,7 @@ function SetLoopCount(req, res, next) {
 
                 Tries: int.parse( req.params.count)
 
-            }).complete(function (dat) {
+            }).then(function (dat) {
 
                     status = true;
                     logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Succeed");
@@ -546,7 +540,6 @@ function SetLoopCount(req, res, next) {
     return next();
 
 }
-
 
 function SetTimeout(req, res, next) {
 
@@ -618,7 +611,6 @@ function SetTimeout(req, res, next) {
     return next();
 
 }
-
 
 function SetExtensionDialing(req, res, next) {
 
@@ -693,12 +685,11 @@ function SetExtensionDialing(req, res, next) {
 
 }
 
-
 function RemoveAction(req, res, next) {
 
 
     logger.debug("DVP-AutoAttendant.RemoveAction HTTP byID ");
-    dbmodel.AutoAttendant.find({where: [{Name: req.params.name }], include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
+    dbmodel.Action.find({where: [{Name: req.params.id}]}).then(function (aaData) {
 
             try {
 
@@ -709,8 +700,8 @@ function RemoveAction(req, res, next) {
                 {
 
 
-                    logger.error("DVP-AutoAttendant.RemoveAction PGSQL  failed", errx);
-                    var instance = msg.FormatMessage(errx,"Action delete failed", false,undefined);
+                    logger.info("DVP-AutoAttendant.RemoveAction PGSQL  removed");
+                    var instance = msg.FormatMessage(undefined,"Action deleted", true,undefined);
                     res.write(instance);
                     res.end();
 
@@ -718,11 +709,13 @@ function RemoveAction(req, res, next) {
 
                 }).catch(function (err){
 
-                    logger.info("DVP-AutoAttendant.RemoveAction PGSQL  Removed");
-                    var instance = msg.FormatMessage(err,"Action Deleted", true,undefined);
 
+
+                    logger.error("DVP-AutoAttendant.RemoveAction PGSQL  failed", err);
+                    var instance = msg.FormatMessage(err,"Action delete failed", false,undefined);
                     res.write(instance);
                     res.end();
+
 
 
                 });
@@ -748,7 +741,6 @@ function RemoveAction(req, res, next) {
     });
     return next();
 }
-
 
 function RemoveAutoAttendent(req, res, next) {
 
@@ -790,10 +782,6 @@ function RemoveAutoAttendent(req, res, next) {
 
                 });
 
-
-
-
-
             } catch(exp) {
 
                 logger.error("DVP-AutoAttendant.RemoveAutoAttendent stringify json failed",  exp);
@@ -802,7 +790,6 @@ function RemoveAutoAttendent(req, res, next) {
                 res.end();
 
             }
-
 
     }).catch(function (err) {
 
@@ -813,7 +800,6 @@ function RemoveAutoAttendent(req, res, next) {
     return next();
 
 }
-
 
 function SetAction(req, res, next) {
 
@@ -844,11 +830,9 @@ function SetAction(req, res, next) {
                     .save()
                     .then(function (dat) {
 
+                            logger.debug("DVP-AutoAttendant.SetAction Action Saved ");
 
-
-                            logger.debug("DVP-AutoAttendant.SetAction Action Saved ",actionObj);
-
-                            aaData.addActions(actionObj).complete(function (errx, aaData) {
+                            aaData.addActions(actionObj).then(function (aaData) {
 
                                 logger.debug("DVP-AutoAttendant.SetAction Action Set Attendant");
 
@@ -859,12 +843,19 @@ function SetAction(req, res, next) {
                                 res.end();
 
 
+                            }).catch(function(err){
+
+
+                                logger.error("DVP-AutoAttendant.SetAction Action set failed");
+
+                                status = false;
+
+                                var instance = msg.FormatMessage(err, "Add Action", status, undefined);
+                                res.write(instance);
+                                res.end();
+
+
                             });
-
-
-
-
-
                     }
                 ).catch(function (err) {
 
@@ -914,6 +905,7 @@ function SetAction(req, res, next) {
 
 
 }
+
 
 
 module.exports.CreateAutoAttendant = CreateAutoAttendant;

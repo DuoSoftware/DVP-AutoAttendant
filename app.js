@@ -33,7 +33,7 @@ server.post('/DVP/API/:version/AuttoAttendant/:name/Loop/:count', aa.SetLoopCoun
 server.post('/DVP/API/:version/AuttoAttendant/:name/Timeout/:sec', aa.SetTimeout);
 server.post('/DVP/API/:version/AuttoAttendant/:name/EnableExtention/:status', aa.SetExtensionDialing);
 server.post('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.SetAction);
-//server.del('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.RemoveAction);
+server.del('/DVP/API/:version/AuttoAttendant/:name/Action/:id', aa.RemoveAction);
 
 
 //var basepath = 'http://'+ host;
