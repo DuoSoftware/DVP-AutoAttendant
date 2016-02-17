@@ -9,86 +9,115 @@ function CreateAutoAttendant(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.CreateAutoAttendant HTTP");
 
-    var model = 0;
-    var status = false;
-    var returnerror= undefined;
-
-    if(req.body){
 
 
-        var aaData=req.body;
+    var company;
+    var tenant;
+
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
 
 
-        var aaMaster = dbmodel.AutoAttendant.build({
-            Name: aaData.Name,
-            Code: aaData.Code,
-            Extention: aaData.Extention,
-            DayGreeting: aaData.DayGreeting,
-            NightGreeting: aaData.NightGreeting,
-            MenuSound: aaData.MenuSound,
-            Tries: aaData.Tries,
-            TimeOut: aaData.TimeOut,
-            EnableExtention: aaData.EnableExtention,
-            Company: aaData.Company,
-            Tenant: aaData.Tenant
-        })
+        var model = 0;
+        var status = false;
+        var returnerror= undefined;
+
+        if(req.body){
 
 
-        aaMaster
-            .save()
-            .then(function(inst) {
+            var aaData=req.body;
 
 
-                logger.debug('DVP-AutoAttendant.CreateAutoAttendant PGSQL AutoAttendant object saved successful');
-                status = true;
-
-                try {
-
-
-                    var instance = msg.FormatMessage(returnerror,"AutoAttendant creation", status,undefined);
-                    res.write(instance);
-                    res.end();
-
-
-                }
-                catch(exp){
-
-                    logger.error('DVP-AutoAttendant.CreateAutoAttendant Service failed ', exp);
-
-                }
-            }).catch(function (err){
+            var aaMaster = dbmodel.AutoAttendant.build({
+                Name: aaData.Name,
+                Code: aaData.Code,
+                Extention: aaData.Extention,
+                DayGreeting: aaData.DayGreeting,
+                NightGreeting: aaData.NightGreeting,
+                MenuSound: aaData.MenuSound,
+                Tries: aaData.Tries,
+                TimeOut: aaData.TimeOut,
+                EnableExtention: aaData.EnableExtention,
+                Company: company,
+                Tenant: tenant
+            })
 
 
-                logger.error("DVP-AutoAttendant.CreateAutoAttendant PGSQL save failed ",err);
-                returnerror = err;
+            aaMaster
+                .save()
+                .then(function(inst) {
 
 
-        });
+                    logger.debug('DVP-AutoAttendant.CreateAutoAttendant PGSQL AutoAttendant object saved successful');
+                    status = true;
+
+                    try {
+
+
+                        var instance = msg.FormatMessage(returnerror,"AutoAttendant creation", status,undefined);
+                        res.write(instance);
+                        res.end();
+
+
+                    }
+                    catch(exp){
+
+                        logger.error('DVP-AutoAttendant.CreateAutoAttendant Service failed ', exp);
+
+                    }
+                }).catch(function (err){
+
+
+                    logger.error("DVP-AutoAttendant.CreateAutoAttendant PGSQL save failed ",err);
+                    returnerror = err;
+
+
+                });
 
 
 
-    }
-    else{
+        }
+        else{
 
-        logger.error("DVP-AutoAttendant.CreateAutoAttendant request.body is null");
+            logger.error("DVP-AutoAttendant.CreateAutoAttendant request.body is null");
 
-        var instance = msg.FormatMessage(undefined,"AutoAttendant creation", false,undefined);
-        res.write(instance);
+            var instance = msg.FormatMessage(undefined,"AutoAttendant creation", false,undefined);
+            res.write(instance);
+            res.end();
+
+        }
+
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
     }
 
+
+
+
     return next();
 
 }
-
 
 function GetAttendants(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.GetAttendants HTTP");
 
 
-    dbmodel.AutoAttendant.findAll({include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
+    var company;
+    var tenant;
+
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
+
+        dbmodel.AutoAttendant.findAll({where:[{ Company: company}, { Tenant: tenant}],include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
 
 
 
@@ -113,14 +142,25 @@ function GetAttendants(req, res, next) {
 
 
 
-    }).catch(function (err){
+        }).catch(function (err){
 
-        logger.error("DVP-AutoAttendant.GetAttendants PGSQL failed",  err);
-        res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            logger.error("DVP-AutoAttendant.GetAttendants PGSQL failed",  err);
+            res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            res.end();
+
+
+        });
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
+    }
 
-    });
+
+
+
 
     return next();
 
@@ -139,63 +179,82 @@ function UpateAttendant(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.UpateAttendant HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function( aaData) {
-        if(aaData && obj) {
 
-            logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL Auto Attendant Found");
+    var company;
+    var tenant;
 
-            aaData.updateAttributes(obj).then(function (dat) {
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
+
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function( aaData) {
+            if(aaData && obj) {
+
+                logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL Auto Attendant Found");
+
+                aaData.updateAttributes(obj).then(function (dat) {
 
 
 
-                status = true;
-                logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL updated");
+                    status = true;
+                    logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL updated");
 
 
 
-                try {
+                    try {
 
-                    var instance = msg.FormatMessage(outerror, "Auto Attendant updated", status, undefined);
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant updated", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.UpateAttendant Auto Attendant update Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+
+                    logger.error("DVP-AutoAttendant.UpateAttendant PGSQL update Failed ", err);
+                    outerror = err;
+
+                    var instance = msg.FormatMessage(outerror, "Auto Attendant update", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
-
-                    logger.debug("DVP-AutoAttendant.UpateAttendant Auto Attendant update Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-
-                logger.error("DVP-AutoAttendant.UpateAttendant PGSQL update Failed ", err);
-                outerror = err;
-
-                var instance = msg.FormatMessage(outerror, "Auto Attendant update", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant update", status, undefined);
                 res.write(instance);
                 res.end();
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
-            var instance = msg.FormatMessage(undefined, "Auto Attendant update", status, undefined);
+            }
+        }).catch(function (err){
+
+
+            logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(err, "Auto Attendant update", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
 
-        logger.debug("DVP-AutoAttendant.UpateAttendant PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(err, "Auto Attendant update", status, undefined);
-        res.write(instance);
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
 
     return next();
 
@@ -207,7 +266,15 @@ function GetAttendantByName(req, res, next) {
     logger.debug("DVP-AutoAttendant.GetAttendantByName HTTP byID ");
 
 
-    dbmodel.AutoAttendant.find({where: [{Name: req.params.name }], include: [{model: dbmodel.Action, as: "Actions"}]}).then(function ( aaData) {
+    var company;
+    var tenant;
+
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
+
+        dbmodel.AutoAttendant.find({where: [{Name: req.params.name },{ Company: company}, { Tenant: tenant}], include: [{model: dbmodel.Action, as: "Actions"}]}).then(function ( aaData) {
 
 
 
@@ -235,17 +302,27 @@ function GetAttendantByName(req, res, next) {
 
 
 
-    }).catch(function (err){
+        }).catch(function (err){
 
 
-        logger.error("DVP-AutoAttendant.GetAttendantByName PGSQL failed",  err);
-        res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            logger.error("DVP-AutoAttendant.GetAttendantByName PGSQL failed",  err);
+            res.write(msg.FormatMessage(err,"Auto Attendant NotFound", false,undefined));
+            res.end();
+
+
+
+        });
+
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
+    }
 
 
-    });
-    return next();
+        return next();
 
 
 
@@ -259,58 +336,77 @@ function SetDayGreetingFile(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetDayGreetingFile HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function(aaData) {
-        if(aaData) {
+    var company;
+    var tenant;
 
-            logger.debug("DVP-AutoAttendant.SetDayGreetingFile PGSQL CallServer Found", aaData);
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-            aaData.updateAttributes({
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-                DayGreeting: req.params.file
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function(aaData) {
+            if(aaData) {
 
-            }).then(function (dat) {
+                logger.debug("DVP-AutoAttendant.SetDayGreetingFile PGSQL CallServer Found", aaData);
+
+                aaData.updateAttributes({
+
+                    DayGreeting: req.params.file
+
+                }).then(function (dat) {
 
                     status = true;
                     logger.debug("DVP-AutoAttendant.SetDayGreetingFile PGSQL Set Greeting Succeed");
 
 
 
-                try {
+                    try {
+
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetDayGreetingFile Auto Attendant Set Greeting Error ", exp);
+
+                    }
+
+                }).catch(function(err){
+
+
+                    logger.error("DVP-AutoAttendant.SetDayGreetingFile PGSQL Set Greeting Failed ", err);
+                    outerror = err;
 
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
 
-                    logger.debug("DVP-AutoAttendant.SetDayGreetingFile Auto Attendant Set Greeting Error ", exp);
+                })
+            }
 
-                }
+        }).catch(function (err){
 
-            }).catch(function(err){
+            logger.debug("DVP-AutoAttendant.SetDayGreetingFile PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(undefined, "Auto Attendant Set Greeting", status, undefined);
+            res.write(instance);
+            res.end();
 
-
-                logger.error("DVP-AutoAttendant.SetDayGreetingFile PGSQL Set Greeting Failed ", err);
-                outerror = err;
-
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
-                res.write(instance);
-                res.end();
+        });
 
 
-            })
-        }
+    }else{
 
-    }).catch(function (err){
-
-        logger.debug("DVP-AutoAttendant.SetDayGreetingFile PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(undefined, "Auto Attendant Set Greeting", status, undefined);
-        res.write(instance);
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
+
 
     return next();
 
@@ -327,65 +423,84 @@ function SetNightGreetingFile(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetNightGreetingFile HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function(aaData) {
-        if(aaData) {
 
-            logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL CallServer Found");
+    var company;
+    var tenant;
 
-            aaData.updateAttributes({
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-                NightGreeting: req.params.file
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-            }).then(function (dat) {
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function(aaData) {
+            if(aaData) {
+
+                logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL CallServer Found");
+
+                aaData.updateAttributes({
+
+                    NightGreeting: req.params.file
+
+                }).then(function (dat) {
 
                     status = true;
                     logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL Set Greeting Succeed");
 
 
 
-                try {
+                    try {
+
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetNightGreetingFile Auto Attendant Set Greeting Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+                    logger.error("DVP-AutoAttendant.SetNightGreetingFile PGSQL Set Greeting Failed ", err);
+                    outerror = err;
+
 
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
-
-                    logger.debug("DVP-AutoAttendant.SetNightGreetingFile Auto Attendant Set Greeting Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-                logger.error("DVP-AutoAttendant.SetNightGreetingFile PGSQL Set Greeting Failed ", err);
-                outerror = err;
-
-
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set Greeting", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant Set Greeting", status, undefined);
                 res.write(instance);
                 res.end();
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL AutoAttendant NotFound ", err);
-            var instance = msg.FormatMessage(undefined, "Auto Attendant Set Greeting", status, undefined);
+            }
+        }).catch(function (err){
+
+
+            logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(err, "Auto Attendant Set Greeting", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
 
-        logger.debug("DVP-AutoAttendant.SetNightGreetingFile PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(err, "Auto Attendant Set Greeting", status, undefined);
-        res.write(instance);
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
 
     return next();
 
@@ -403,17 +518,27 @@ function SetMenue(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetMenue HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function( aaData) {
-        if(aaData) {
 
-            logger.debug("DVP-AutoAttendant.SetMenue PGSQL Auto Attendant Found");
+    var company;
+    var tenant;
 
-            aaData.updateAttributes({
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-                MenuSound: req.params.file
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-            }).then(function (dat) {
+
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function( aaData) {
+            if(aaData) {
+
+                logger.debug("DVP-AutoAttendant.SetMenue PGSQL Auto Attendant Found");
+
+                aaData.updateAttributes({
+
+                    MenuSound: req.params.file
+
+                }).then(function (dat) {
 
 
 
@@ -422,48 +547,58 @@ function SetMenue(req, res, next) {
 
 
 
-                try {
+                    try {
+
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set Menu", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetMenue Auto Attendant Set Menu Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+
+                    logger.error("DVP-AutoAttendant.SetMenue PGSQL Set Menu Failed ", err);
+                    outerror = err;
 
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set Menu", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
-
-                    logger.debug("DVP-AutoAttendant.SetMenue Auto Attendant Set Menu Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-
-                logger.error("DVP-AutoAttendant.SetMenue PGSQL Set Menu Failed ", err);
-                outerror = err;
-
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set Menu", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant Set Menu", status, undefined);
                 res.write(instance);
                 res.end();
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
-            var instance = msg.FormatMessage(undefined, "Auto Attendant Set Menu", status, undefined);
+            }
+        }).catch(function (err){
+
+
+            logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(err, "Auto Attendant Set Menu", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
 
-        logger.debug("DVP-AutoAttendant.SetMenue PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(err, "Auto Attendant Set Menu", status, undefined);
-        res.write(instance);
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
 
     return next();
 
@@ -479,63 +614,82 @@ function SetLoopCount(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetLoopCount HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function(aaData) {
-        if( aaData) {
+    var company;
+    var tenant;
 
-            logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Auto Attendant Found");
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-            aaData.updateAttributes({
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-                Tries: int.parse( req.params.count)
 
-            }).then(function (dat) {
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function(aaData) {
+            if( aaData) {
+
+                logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Auto Attendant Found");
+
+                aaData.updateAttributes({
+
+                    Tries: int.parse( req.params.count)
+
+                }).then(function (dat) {
 
                     status = true;
                     logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Succeed");
 
 
 
-                try {
+                    try {
 
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set Loop Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+                    logger.error("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Failed ", err);
+                    outerror = err;
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
 
-                    logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set Loop Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-                logger.error("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Failed ", err);
-                outerror = err;
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant Set Loop", status, undefined);
                 res.write(instance);
                 res.end();
 
+            }
+        }).catch(function (err){
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
-            var instance = msg.FormatMessage(undefined, "Auto Attendant Set Loop", status, undefined);
+            logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(err, "Auto Attendant Set Loop", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
-        logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(err, "Auto Attendant Set Loop", status, undefined);
-        res.write(instance);
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
 
     return next();
 
@@ -549,17 +703,26 @@ function SetTimeout(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetLoopCount HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function(aaData) {
-        if( aaData) {
+    var company;
+    var tenant;
 
-            logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Auto Attendant Found");
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-            aaData.updateAttributes({
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-                TimeOut: int.parse( req.params.sec)
 
-            }).then(function (dat) {
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function(aaData) {
+            if( aaData) {
+
+                logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL Auto Attendant Found");
+
+                aaData.updateAttributes({
+
+                    TimeOut: int.parse( req.params.sec)
+
+                }).then(function (dat) {
 
 
                     status = true;
@@ -567,46 +730,56 @@ function SetTimeout(req, res, next) {
 
 
 
-                try {
+                    try {
 
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set Loop Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+                    logger.error("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Failed ", err);
+                    outerror = err;
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
 
-                    logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set Loop Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-                logger.error("DVP-AutoAttendant.SetLoopCount PGSQL Set Loop Failed ", err);
-                outerror = err;
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set Loop", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant Set Loop", status, undefined);
                 res.write(instance);
                 res.end();
 
+            }
+        }).catch(function (err){
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
-            var instance = msg.FormatMessage(undefined, "Auto Attendant Set Loop", status, undefined);
+            logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+            var instance = msg.FormatMessage(err, "Auto Attendant Set Loop", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
-        logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(err, "Auto Attendant Set Loop", status, undefined);
-        res.write(instance);
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
 
     return next();
 
@@ -620,17 +793,26 @@ function SetExtensionDialing(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetExtensionDialing HTTP %s ", name);
 
-    var status = false;
-    dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function( aaData) {
-        if( aaData) {
+    var company;
+    var tenant;
 
-            logger.debug("DVP-AutoAttendant.SetExtensionDialing PGSQL Auto Attendant Found");
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-            aaData.updateAttributes({
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-                EnableExtention: bool.parse( req.params.status)
 
-            }).then(function (dat) {
+        var status = false;
+        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name },{ Company: company}, { Tenant: tenant}]}).then(function( aaData) {
+            if( aaData) {
+
+                logger.debug("DVP-AutoAttendant.SetExtensionDialing PGSQL Auto Attendant Found");
+
+                aaData.updateAttributes({
+
+                    EnableExtention: bool.parse( req.params.status)
+
+                }).then(function (dat) {
 
 
 
@@ -639,45 +821,57 @@ function SetExtensionDialing(req, res, next) {
 
 
 
-                try {
+                    try {
 
+                        var instance = msg.FormatMessage(outerror, "Auto Attendant Set ExtDialing", status, undefined);
+                        res.write(instance);
+                        res.end();
+
+                    }
+                    catch (exp) {
+
+                        logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set ExtDialing Error ", exp);
+
+                    }
+
+                }).catch(function (err){
+
+                    logger.error("DVP-AutoAttendant.SetExtensionDialing PGSQL Set ExtDialing Failed ", err);
+                    outerror = err;
                     var instance = msg.FormatMessage(outerror, "Auto Attendant Set ExtDialing", status, undefined);
                     res.write(instance);
                     res.end();
 
-                }
-                catch (exp) {
-
-                    logger.debug("DVP-AutoAttendant.SetLoopCount Auto Attendant Set ExtDialing Error ", exp);
-
-                }
-
-            }).catch(function (err){
-
-                logger.error("DVP-AutoAttendant.SetExtensionDialing PGSQL Set ExtDialing Failed ", err);
-                outerror = err;
-                var instance = msg.FormatMessage(outerror, "Auto Attendant Set ExtDialing", status, undefined);
+                });
+            }
+            else
+            {
+                //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+                var instance = msg.FormatMessage(undefined, "Auto Attendant Enable ExtDialing", status, undefined);
                 res.write(instance);
                 res.end();
 
-            });
-        }
-        else
-        {
-            //logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
+            }
+        }).catch(function (err){
+
+            logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
             var instance = msg.FormatMessage(undefined, "Auto Attendant Enable ExtDialing", status, undefined);
             res.write(instance);
             res.end();
 
-        }
-    }).catch(function (err){
+        });
 
-        logger.debug("DVP-AutoAttendant.SetLoopCount PGSQL AutoAttendant NotFound ", err);
-        var instance = msg.FormatMessage(undefined, "Auto Attendant Enable ExtDialing", status, undefined);
-        res.write(instance);
+
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
-    });
+    }
+
+
+
 
     return next();
 
@@ -689,7 +883,17 @@ function RemoveAction(req, res, next) {
 
 
     logger.debug("DVP-AutoAttendant.RemoveAction HTTP byID ");
-    dbmodel.Action.find({where: [{Name: req.params.id}]}).then(function (aaData) {
+
+
+    var company;
+    var tenant;
+
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
+
+        dbmodel.Action.find({where: [{Name: req.params.id}]}).then(function (aaData) {
 
             try {
 
@@ -731,14 +935,24 @@ function RemoveAction(req, res, next) {
             }
 
 
-    }).catch(function (err){
+        }).catch(function (err){
 
-        logger.error("DVP-AutoAttendant.RemoveAction PGSQL failed",  err);
-        res.write(msg.FormatMessage(err,"Action NotFound", false,undefined));
+            logger.error("DVP-AutoAttendant.RemoveAction PGSQL failed",  err);
+            res.write(msg.FormatMessage(err,"Action NotFound", false,undefined));
+            res.end();
+
+
+        });
+
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
 
+    }
 
-    });
+
     return next();
 }
 
@@ -750,7 +964,16 @@ function RemoveAutoAttendent(req, res, next) {
     logger.debug("DVP-AutoAttendant.RemoveAutoAttendent HTTP byID ");
 
 
-    dbmodel.AutoAttendant.find({where: [{Name: req.params.name }], include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
+    var company;
+    var tenant;
+
+    if(req&& req.user && req.user.company && req.user.tenant) {
+
+        company =req.user.company;
+        tenant = req.user.tenant;
+
+
+        dbmodel.AutoAttendant.find({where: [{Name: req.params.name },{ Company: company}, { Tenant: tenant}], include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
 
 
 
@@ -764,10 +987,10 @@ function RemoveAutoAttendent(req, res, next) {
                 aaData.destroy().then(function (result)
                 {
 
-                        logger.info("DVP-AutoAttendant.RemoveAutoAttendent PGSQL  Removed");
-                        instance = msg.FormatMessage(undefined,"Auto Attendant Deleted", true,undefined);
-                        res.write(instance);
-                        res.end();
+                    logger.info("DVP-AutoAttendant.RemoveAutoAttendent PGSQL  Removed");
+                    instance = msg.FormatMessage(undefined,"Auto Attendant Deleted", true,undefined);
+                    res.write(instance);
+                    res.end();
 
 
 
@@ -791,12 +1014,23 @@ function RemoveAutoAttendent(req, res, next) {
 
             }
 
-    }).catch(function (err) {
+        }).catch(function (err) {
 
-        logger.error("DVP-AutoAttendant.RemoveAutoAttendent PGSQL failed", err);
-        res.write(msg.FormatMessage(err, "Auto Attendant NotFound", false, undefined));
+            logger.error("DVP-AutoAttendant.RemoveAutoAttendent PGSQL failed", err);
+            res.write(msg.FormatMessage(err, "Auto Attendant NotFound", false, undefined));
+            res.end();
+        });
+
+    }else{
+
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
-    });
+
+    }
+
+
+
+
     return next();
 
 }
@@ -805,30 +1039,39 @@ function SetAction(req, res, next) {
 
     logger.debug("DVP-AutoAttendant.SetAction HTTP");
 
-    var Action=req.body;
-    var status = false;
 
-    var actionItem = req.body;
+    var company;
+    var tenant;
 
-    if(actionItem){
+    if(req&& req.user && req.user.company && req.user.tenant) {
 
-        dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }]}).then(function( aaData) {
-            if(aaData) {
-                logger.debug("DVP-AutoAttendant.SetAction Attendant Found ");
+        company =req.user.company;
+        tenant = req.user.tenant;
 
-                var actionObj = dbmodel.Action.build(
-                    {
-                        Name: actionItem.Name,
-                        Action: actionItem.Action,
-                        OnEvent: req.params.on,
-                        Data: actionItem.Data
-                    }
-                );
+        var Action=req.body;
+        var status = false;
+
+        var actionItem = req.body;
+
+        if(actionItem){
+
+            dbmodel.AutoAttendant.find({where: [{ Name: req.params.name }, { Company: company}, { Tenant: tenant}]}).then(function( aaData) {
+                if(aaData) {
+                    logger.debug("DVP-AutoAttendant.SetAction Attendant Found ");
+
+                    var actionObj = dbmodel.Action.build(
+                        {
+                            Name: actionItem.Name,
+                            Action: actionItem.Action,
+                            OnEvent: req.params.on,
+                            Data: actionItem.Data
+                        }
+                    );
 
 
-                actionObj
-                    .save()
-                    .then(function (dat) {
+                    actionObj
+                        .save()
+                        .then(function (dat) {
 
                             logger.debug("DVP-AutoAttendant.SetAction Action Saved ");
 
@@ -856,49 +1099,60 @@ function SetAction(req, res, next) {
 
 
                             });
-                    }
-                ).catch(function (err) {
+                        }
+                    ).catch(function (err) {
 
 
-                        var instance = msg.FormatMessage(err, "Add Action", status, undefined);
-                        res.write(instance);
-                        res.end();
+                            var instance = msg.FormatMessage(err, "Add Action", status, undefined);
+                            res.write(instance);
+                            res.end();
 
-                        logger.error("DVP-AutoAttendant.SetAction Action Save Failed ",err);
+                            logger.error("DVP-AutoAttendant.SetAction Action Save Failed ",err);
 
 
 
-                    });
-            }
-            else
-            {
-                logger.error("DVP-AutoAttendant.SetAction Attendant NotFound ");
-                var instance = msg.FormatMessage(undefined, "Add Action", status, undefined);
+                        });
+                }
+                else
+                {
+                    logger.error("DVP-AutoAttendant.SetAction Attendant NotFound ");
+                    var instance = msg.FormatMessage(undefined, "Add Action", status, undefined);
+                    res.write(instance);
+                    res.end();
+
+                }
+
+            }).catch(function (err) {
+
+                logger.error("DVP-AutoAttendant.SetAction Attendant NotFound ", err);
+                var instance = msg.FormatMessage(err, "Add Action", status, undefined);
                 res.write(instance);
                 res.end();
 
-            }
+            });
 
-        }).catch(function (err) {
 
-            logger.error("DVP-AutoAttendant.SetAction Attendant NotFound ", err);
-            var instance = msg.FormatMessage(err, "Add Action", status, undefined);
+
+        }
+        else{
+
+            var instance = msg.FormatMessage(undefined, "Add Action", status, undefined);
             res.write(instance);
             res.end();
+            logger.debug("DVP-AutoAttendant.SetAction Object Validation Failed ");
 
-        });
+        }
 
 
+    }else{
 
-    }
-    else{
-
-        var instance = msg.FormatMessage(undefined, "Add Action", status, undefined);
-        res.write(instance);
+        res.write(msg.FormatMessage(err, "Token error, no company data found", false, undefined));
         res.end();
-        logger.debug("DVP-AutoAttendant.SetAction Object Validation Failed ");
 
     }
+
+
+
 
 
     return next();
