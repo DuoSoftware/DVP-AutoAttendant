@@ -113,4 +113,4 @@ server.listen(port, function () {
 });
 
 
-as.GetAutoAttendant("1111",1,3,function(data){})
+//as.GetAutoAttendant("1111",1,3,function(data){})
