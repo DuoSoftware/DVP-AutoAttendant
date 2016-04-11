@@ -31,19 +31,19 @@ server.use(jwt({secret: secret.Secret}));
 
 //////////////////////////////Cloud API/////////////////////////////////////////////////////
 
-server.post('/DVP/API/:version/AuttoAttendant',authorization({resource:"autoattendance", action:"write"}), aa.CreateAutoAttendant);
-server.get('/DVP/API/:version/AuttoAttendants', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendants);
-server.get('/DVP/API/:version/AuttoAttendant/:name', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendantByName);
-server.put('/DVP/API/:version/AuttoAttendant/:name', authorization({resource:"autoattendance", action:"write"}), aa.UpateAttendant);
-server.del('/DVP/API/:version/AuttoAttendant/:name', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAutoAttendent);
-server.post('/DVP/API/:version/AuttoAttendant/:name/DayGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetDayGreetingFile);
-server.post('/DVP/API/:version/AuttoAttendant/:name/NightGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetNightGreetingFile);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Menue/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetMenue);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Loop/:count', authorization({resource:"autoattendance", action:"write"}), aa.SetLoopCount);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Timeout/:sec', authorization({resource:"autoattendance", action:"write"}), aa.SetTimeout);
-server.post('/DVP/API/:version/AuttoAttendant/:name/EnableExtention/:status', authorization({resource:"autoattendance", action:"write"}), aa.SetExtensionDialing);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Action/:on', authorization({resource:"autoattendance", action:"write"}), aa.SetAction);
-server.del('/DVP/API/:version/AuttoAttendant/:name/Action/:id', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAction);
+server.post('/DVP/API/:version/AutoAttendant',authorization({resource:"autoattendance", action:"write"}), aa.CreateAutoAttendant);
+server.get('/DVP/API/:version/AutoAttendants', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendants);
+server.get('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendantByName);
+server.put('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"write"}), aa.UpateAttendant);
+server.del('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAutoAttendent);
+server.post('/DVP/API/:version/AutoAttendant/:name/DayGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetDayGreetingFile);
+server.post('/DVP/API/:version/AutoAttendant/:name/NightGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetNightGreetingFile);
+server.post('/DVP/API/:version/AutoAttendant/:name/Menue/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetMenue);
+server.post('/DVP/API/:version/AutoAttendant/:name/Loop/:count', authorization({resource:"autoattendance", action:"write"}), aa.SetLoopCount);
+server.post('/DVP/API/:version/AutoAttendant/:name/Timeout/:sec', authorization({resource:"autoattendance", action:"write"}), aa.SetTimeout);
+server.post('/DVP/API/:version/AutoAttendant/:name/EnableExtention/:status', authorization({resource:"autoattendance", action:"write"}), aa.SetExtensionDialing);
+server.post('/DVP/API/:version/AutoAttendant/:name/Action/:on', authorization({resource:"autoattendance", action:"write"}), aa.SetAction);
+server.del('/DVP/API/:version/AutoAttendant/:name/Action/:id', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAction);
 
 
 //var basepath = 'http://'+ host;
