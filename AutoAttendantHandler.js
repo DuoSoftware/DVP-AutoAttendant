@@ -120,8 +120,6 @@ function GetAttendants(req, res, next) {
         dbmodel.AutoAttendant.findAll({where:[{ Company: company}, { Tenant: tenant}],include: [{model: dbmodel.Action, as: "Actions"}]}).then(function (aaData) {
 
 
-
-
             try {
 
                 var instance = msg.FormatMessage(undefined,"Auto Attendant Found", true,aaData);
@@ -138,8 +136,6 @@ function GetAttendants(req, res, next) {
                 res.end();
 
             }
-
-
 
 
         }).catch(function (err){
@@ -167,7 +163,7 @@ function GetAttendants(req, res, next) {
 
 }
 
-function UpateAttendant(req, res, next) {
+function UpdateAttendant(req, res, next) {
 
 
 
@@ -893,7 +889,7 @@ function RemoveAction(req, res, next) {
         company =req.user.company;
         tenant = req.user.tenant;
 
-        dbmodel.Action.find({where: [{Name: req.params.id}]}).then(function (aaData) {
+        dbmodel.Action.find({where: [{id: req.params.id}]}).then(function (aaData) {
 
             try {
 
@@ -1174,7 +1170,7 @@ module.exports.SetExtensionDialing = SetExtensionDialing;
 module.exports.SetAction = SetAction;
 module.exports.RemoveAction = RemoveAction;
 module.exports.RemoveAutoAttendent = RemoveAutoAttendent;
-module.exports.UpateAttendant = UpateAttendant;
+module.exports.UpdateAttendant = UpdateAttendant;
 
 //////////////////////////////Cloud API/////////////////////////////////////////////////////
 /*
