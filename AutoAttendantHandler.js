@@ -24,10 +24,10 @@ function CreateAutoAttendant(req, res, next) {
         var status = false;
         var returnerror= undefined;
 
-        if(req.body){
+        if(req.body) {
 
 
-            var aaData=req.body;
+            var aaData = req.body;
 
 
             var aaMaster = dbmodel.AutoAttendant.build({
@@ -47,7 +47,7 @@ function CreateAutoAttendant(req, res, next) {
 
             aaMaster
                 .save()
-                .then(function(inst) {
+                .then(function (inst) {
 
 
                     logger.debug('DVP-AutoAttendant.CreateAutoAttendant PGSQL AutoAttendant object saved successful');
@@ -56,26 +56,32 @@ function CreateAutoAttendant(req, res, next) {
                     try {
 
 
-                        var instance = msg.FormatMessage(returnerror,"AutoAttendant creation", status,undefined);
+                        var instance = msg.FormatMessage(returnerror, "AutoAttendant creation", status, undefined);
                         res.write(instance);
                         res.end();
 
 
                     }
-                    catch(exp){
+                    catch (exp) {
 
                         logger.error('DVP-AutoAttendant.CreateAutoAttendant Service failed ', exp);
+                        var instance = msg.FormatMessage(exp, "AutoAttendant creation", false, undefined);
+                        res.write(instance);
+                        res.end();
+
 
                     }
-                }).catch(function (err){
+                }).catch(function (err) {
 
 
-                    logger.error("DVP-AutoAttendant.CreateAutoAttendant PGSQL save failed ",err);
-                    returnerror = err;
+                logger.error("DVP-AutoAttendant.CreateAutoAttendant PGSQL save failed ", err);
+                returnerror = err;
+                var instance = msg.FormatMessage(err, "AutoAttendant creation", false, undefined);
+                res.write(instance);
+                res.end();
 
 
-                });
-
+            });
 
 
         }
