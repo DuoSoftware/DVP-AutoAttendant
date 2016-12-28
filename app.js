@@ -1,11 +1,15 @@
 
 var restify = require('restify');
-var sre = require('swagger-restify-express');
+//var sre = require('swagger-restify-express');
 var logger = require('dvp-common/LogHandler/CommonLogHandler.js').logger;
 var aa = require("./AutoAttendantHandler.js");
 var as = require("./AutoAttendantServer.js");
 var config = require('config');
 var esl = require('modesl');
+
+var jwt = require('restify-jwt');
+var secret = require('dvp-common/Authentication/Secret.js');
+var authorization = require('dvp-common/Authentication/Authorization.js');
 
 var port = config.Host.port || 3000;
 var host = config.Host.vdomain || 'localhost';
@@ -18,27 +22,35 @@ var server = restify.createServer({
 server.pre(restify.pre.userAgentConnection());
 server.use(restify.bodyParser({ mapParams: false }));
 
+restify.CORS.ALLOW_HEADERS.push('authorization');
+server.use(restify.CORS());
+server.use(restify.fullResponse());
+
+server.use(jwt({secret: secret.Secret}));
+
 
 //////////////////////////////Cloud API/////////////////////////////////////////////////////
 
-server.post('/DVP/API/:version/AuttoAttendant', aa.CreateAutoAttendant);
-server.get('/DVP/API/:version/AuttoAttendants', aa.GetAttendants);
-server.get('/DVP/API/:version/AuttoAttendant/:name', aa.GetAttendantByName);
-server.del('/DVP/API/:version/AuttoAttendant/:name', aa.RemoveAutoAttendent);
-server.post('/DVP/API/:version/AuttoAttendant/:name/DayGreeting/:file', aa.SetDayGreetingFile);
-server.post('/DVP/API/:version/AuttoAttendant/:name/NightGreeting/:file', aa.SetNightGreetingFile);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Menue/:file', aa.SetMenue);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Loop/:count', aa.SetLoopCount);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Timeout/:sec', aa.SetTimeout);
-server.post('/DVP/API/:version/AuttoAttendant/:name/EnableExtention/:status', aa.SetExtensionDialing);
-server.post('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.SetAction);
-//server.del('/DVP/API/:version/AuttoAttendant/:name/Action/:on', aa.RemoveAction);
+server.post('/DVP/API/:version/AutoAttendant',authorization({resource:"autoattendance", action:"write"}), aa.CreateAutoAttendant);
+server.get('/DVP/API/:version/AutoAttendants', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendants);
+server.get('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"read"}), aa.GetAttendantByName);
+server.put('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"write"}), aa.UpdateAttendant);
+server.del('/DVP/API/:version/AutoAttendant/:name', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAutoAttendent);
+server.post('/DVP/API/:version/AutoAttendant/:name/DayGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetDayGreetingFile);
+server.post('/DVP/API/:version/AutoAttendant/:name/NightGreeting/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetNightGreetingFile);
+server.post('/DVP/API/:version/AutoAttendant/:name/Menue/:file', authorization({resource:"autoattendance", action:"write"}), aa.SetMenue);
+server.post('/DVP/API/:version/AutoAttendant/:name/Loop/:count', authorization({resource:"autoattendance", action:"write"}), aa.SetLoopCount);
+server.post('/DVP/API/:version/AutoAttendant/:name/Timeout/:sec', authorization({resource:"autoattendance", action:"write"}), aa.SetTimeout);
+server.post('/DVP/API/:version/AutoAttendant/:name/EnableExtention/:status', authorization({resource:"autoattendance", action:"write"}), aa.SetExtensionDialing);
+server.put('/DVP/API/:version/AutoAttendant/:name/Action/:on', authorization({resource:"autoattendance", action:"write"}), aa.SetAction);
+server.del('/DVP/API/:version/AutoAttendant/:name/Action/:id', authorization({resource:"autoattendance", action:"delete"}), aa.RemoveAction);
 
 
 //var basepath = 'http://'+ host;
-var basepath = 'http://'+ "localhost"+":"+port;
+//var basepath = 'http://'+ "localhost"+":"+port;
 //var basepath = 'http://duosoftware-dvp-clusterconfigu.104.131.90.110.xip.io';
 
+/*
 sre.init(server, {
         resourceName : 'AutoAttendantService',
         server : 'restify', // or express
@@ -50,7 +62,7 @@ sre.init(server, {
         }
     }
 )
-
+*/
 
 
 var esl_server = new esl.Server({port: 8084, myevents:true}, function() {
@@ -101,4 +113,4 @@ server.listen(port, function () {
 });
 
 
-as.GetAutoAttendant("1111",1,3,function(data){})
+//as.GetAutoAttendant("1111",1,3,function(data){})
