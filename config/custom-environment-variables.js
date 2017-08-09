@@ -12,6 +12,7 @@ module.exports = {
     "Redis":
     {
         "ip": "SYS_REDIS_HOST",
+        "mode":"SYS_REDIS_MODE",
         "port": "SYS_REDIS_PORT",
         "user": "SYS_REDIS_USER",
         "password": "SYS_REDIS_PASSWORD",
@@ -28,6 +29,7 @@ module.exports = {
     {
         "ip": "SYS_REDIS_HOST",
         "port": "SYS_REDIS_PORT",
+        "mode":"SYS_REDIS_MODE",
         "user": "SYS_REDIS_USER",
         "password": "SYS_REDIS_PASSWORD",
         "sentinels":{
